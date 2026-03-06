@@ -2,188 +2,187 @@
 #include "gtest/gtest.h"
 
 #include "ProcessCommandLine.hpp"
+#include "Exceptions.cpp"
 
 TEST(CommandLine, HelpFoundCorrectly)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "--help"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_TRUE(settings.helpRequested);
+    EXPECT_TRUE(res.helpRequested);
 }
 
 TEST(CommandLine, VersionFoundCorrectly)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "--version"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_TRUE(settings.versionRequested);
+    EXPECT_TRUE(res.versionRequested);
 }
 
 TEST(CommandLine, EncryptModeActivated)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "--encrypt"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherMode, CipherMode::Encrypt);
+    
+    EXPECT_EQ(res.cipherMode, CipherMode::Encrypt);
 }
 
 TEST(CommandLine, DecryptModeActivated)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "--decrypt"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherMode, CipherMode::Decrypt);
+    
+    EXPECT_EQ(res.cipherMode, CipherMode::Decrypt);
 }
 
 TEST(CommandLine, KeyEnteredWithoutSpecification)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-k"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), MissingArgument);
 }
 
 TEST(CommandLine, KeyEnteredAndSpecified)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-k", "4"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherKey.size(), 1);
-    EXPECT_EQ(settings.cipherKey[0], "4");
+    
+    EXPECT_EQ(res.cipherKey.size(), 1);
+    EXPECT_EQ(res.cipherKey[0], "4");
 }
 
 TEST(CommandLine, InputFileWithoutArg)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-i"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), MissingArgument);
 }
 
 TEST(CommandLine, InputFileDeclared)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-i", "input.txt"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.inputFile, "input.txt");
+    
+    EXPECT_EQ(res.inputFile, "input.txt");
 }
 
 TEST(CommandLine, OutputFileWithoutArg)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-o"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), MissingArgument);
 }
 
 TEST(CommandLine, OutputFileDeclared)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-o", "output.txt"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.outputFile, "output.txt");
+    
+    EXPECT_EQ(res.outputFile, "output.txt");
 }
 
 TEST(CommandLine, CipherTypeWithoutArg)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-c"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), MissingArgument);
 }
 
 TEST(CommandLine, CipherTypeUnknown)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-c", "rubbish"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), CipherDoesNotExist);
 }
 
 TEST(CommandLine, CipherTypeCaesar)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-c", "caesar"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherType.size(), 1);
-    EXPECT_EQ(settings.cipherType[0], CipherType::Caesar);
+    
+    EXPECT_EQ(res.cipherType.size(), 1);
+    EXPECT_EQ(res.cipherType[0], CipherType::Caesar);
 }
 
 TEST(CommandLine, CipherTypePlayfair)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-c", "playfair"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherType.size(), 1);
-    EXPECT_EQ(settings.cipherType[0], CipherType::Playfair);
+    
+    EXPECT_EQ(res.cipherType.size(), 1);
+    EXPECT_EQ(res.cipherType[0], CipherType::Playfair);
 }
 
 TEST(CommandLine, CipherTypeVigenere)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "-c", "vigenere"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherType.size(), 1);
-    EXPECT_EQ(settings.cipherType[0], CipherType::Vigenere);
+   
+    EXPECT_EQ(res.cipherType.size(), 1);
+    EXPECT_EQ(res.cipherType[0], CipherType::Vigenere);
 }
 
 TEST(CommandLine, MultiCipherWithoutArg)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "--multi-cipher"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), UnexpectedQuantity);
 }
 
 TEST(CommandLine, MultiCipherInvalidArg)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher", "--multi-cipher",
                                            "a"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), MissingArgument);
 }
 
 TEST(CommandLine, MultiCipherMismatchedArgs)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{
         "mpags-cipher", "--multi-cipher", "2", "-c", "caesar", "-k", "23"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_FALSE(res);
+    EXPECT_THROW(processCommandLine(cmdLine), UnexpectedQuantity);
 }
 
 TEST(CommandLine, MultiCipherMatchedArgs)
 {
-    ProgramSettings settings;
+    
     const std::vector<std::string> cmdLine{"mpags-cipher",
                                            "--multi-cipher",
                                            "2",
@@ -195,13 +194,13 @@ TEST(CommandLine, MultiCipherMatchedArgs)
                                            "playfair",
                                            "-k",
                                            "playfairexample"};
-    const bool res{processCommandLine(cmdLine, settings)};
+    const ProgramSettings res{processCommandLine(cmdLine)};
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(settings.cipherType.size(), 2);
-    EXPECT_EQ(settings.cipherType[0], CipherType::Caesar);
-    EXPECT_EQ(settings.cipherType[1], CipherType::Playfair);
-    EXPECT_EQ(settings.cipherKey.size(), 2);
-    EXPECT_EQ(settings.cipherKey[0], "23");
-    EXPECT_EQ(settings.cipherKey[1], "playfairexample");
+    
+    EXPECT_EQ(res.cipherType.size(), 2);
+    EXPECT_EQ(res.cipherType[0], CipherType::Caesar);
+    EXPECT_EQ(res.cipherType[1], CipherType::Playfair);
+    EXPECT_EQ(res.cipherKey.size(), 2);
+    EXPECT_EQ(res.cipherKey[0], "23");
+    EXPECT_EQ(res.cipherKey[1], "playfairexample");
 }

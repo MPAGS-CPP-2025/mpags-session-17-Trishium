@@ -1,5 +1,6 @@
 #include "CaesarCipher.hpp"
 #include "Alphabet.hpp"
+#include "Exceptions.cpp"
 
 #include <iostream>
 #include <string>
@@ -29,16 +30,16 @@ CaesarCipher::CaesarCipher(const std::string& key) : key_{0}
         // handle that instead but we only cover exceptions very briefly on the
         // final day of this course - they are a very complex area of C++ that
         // could take an entire course on their own!)
-        for (const auto& elem : key) {
-            if (!std::isdigit(elem)) {
-                std::cerr
-                    << "[error] cipher key must be an unsigned long integer for Caesar cipher,\n"
-                    << "        the supplied key (" << key
-                    << ") could not be successfully converted" << std::endl;
-                return;
-            }
+        try{
+            key_ = std::stoul(key) % Alphabet::size;
         }
-        key_ = std::stoul(key) % Alphabet::size;
+        catch (std::invalid_argument& e){
+            throw InvalidKey{"[error] cipher key must be an unsigned long integer for Caesar cipher"};
+        }
+        catch (std::out_of_range& e){
+            throw InvalidKey{"[error] cipher key must not be too large"};
+            
+        }
     }
 }
 

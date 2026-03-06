@@ -3,6 +3,7 @@
 #include "CipherType.hpp"
 #include "ProcessCommandLine.hpp"
 #include "TransformChar.hpp"
+#include "Exceptions.cpp"
 
 #include <algorithm>
 #include <fstream>
@@ -16,17 +17,20 @@ int main(int argc, char* argv[])
     const std::vector<std::string> cmdLineArgs{argv, argv + argc};
 
     // Options that might be set by the command-line arguments
-    ProgramSettings settings;
+    
 
     // Process command line arguments
-    const bool cmdLineStatus{processCommandLine(cmdLineArgs, settings)};
-
-    // Any failure in the argument processing means we can't continue
-    // Use a non-zero return value to indicate failure
-    if (!cmdLineStatus) {
+    ProgramSettings settings;
+    try{
+        settings = processCommandLine(cmdLineArgs);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "[error] " << e.what() << std::endl;
         return 1;
     }
 
+    // Any failure in the argument processing means we can't continue
+    // Use a non-zero return value to indicate failure
     // Handle help, if requested
     if (settings.helpRequested) {
         // Line splitting for readability
@@ -94,6 +98,14 @@ int main(int argc, char* argv[])
     std::size_t nCiphers{settings.cipherType.size()};
     ciphers.reserve(nCiphers);
     for (std::size_t iCipher{0}; iCipher < nCiphers; ++iCipher) {
+        try{
+            ciphers.push_back(CipherFactory::makeCipher(
+                settings.cipherType[iCipher], settings.cipherKey[iCipher]));
+        }
+        catch (InvalidKey& e){
+            std::cerr << e.what() << std::endl;
+            return 1;
+        }
         ciphers.push_back(CipherFactory::makeCipher(
             settings.cipherType[iCipher], settings.cipherKey[iCipher]));
 
